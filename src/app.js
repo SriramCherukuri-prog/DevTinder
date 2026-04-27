@@ -3,12 +3,16 @@ const express = require("express");
 const app = express();
 
 
-app.use("/hello",(req,res)=>{
-     res.send("Hello from the server!")
+app.get("/user",(req,res)=>{
+    res.send({firstname:"Sriram",lastname:"Cherukuri"})
 })
 
-app.use("/",(req,res)=>{
-    res.send("Hello from the Welcome Home Page")
+app.post("/user",(req,res)=>{
+    res.send("Data Saved to DataBase Successfully")
+})
+
+app.delete("/user",(req,res)=>{
+    res.send("user deleted Successfully")
 })
 
 
