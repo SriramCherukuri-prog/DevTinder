@@ -3,17 +3,17 @@ const express = require("express");
 const app = express();
 
 
-app.get("/user",(req,res)=>{
-    res.send({firstname:"Sriram",lastname:"Cherukuri"})
-})
+app.use("/user",(req,res,next)=>{
+      
+    // res.send("Response....!")
+    next()
+    
+},
+(req,res)=>{
+    res.send("response2")
+}
+)
 
-app.post("/user",(req,res)=>{
-    res.send("Data Saved to DataBase Successfully")
-})
-
-app.delete("/user",(req,res)=>{
-    res.send("user deleted Successfully")
-})
 
 
 app.listen(2000,()=>{
