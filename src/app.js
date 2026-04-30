@@ -1,42 +1,30 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const UserModel = require("./models/user") 
-const UserForm = require("./models/form")
 
 const app = express();
 
 
+app.use(express.json())
+
 app.post("/signup",async (req,res)=>{
+
+    console.log(req.body)
    
-    const userObj = {
-        firstName:"Virat",
-        lastName:"Kholi",
-        emaiId:"Virat18@gmail.com",
-        password:"Virat@18"
-    }
+  const User = new UserModel(req.body)
 
-     const user = new UserModel(userObj)
-
-     //Save Data
-    await user.save() 
-    
-    res.send("User Added Successfully....!")
+  //save data to database
+  try{
+    await User.save()
+    res.send("User Added to DataBase Successfully...!")
+  }catch(err){
+    res.status(500).send("Bad Request..!",err.message)
+  }
+        
 
 })
 
-app.post("/form",async (req,res)=>{
-    const formObj = {
-        name:"RohitSharma",
-        age:39,
-        designation:"Cricketer"
-    }
 
-    const formData = new UserForm(formObj)
-    
-    await formData.save()
-    res.send("FormData Added Successfully..!!")
-     
-})
 
 
 connectDB()
