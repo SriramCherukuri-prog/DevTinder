@@ -57,8 +57,32 @@ app.get("/feed", async (req,res)=>{
   }
 })
 
+//Delete API- Delete a user from Database
 
+app.delete("/del",async(req,res)=>{
 
+  const userId = req.body.userId
+ try{
+      const UserDel = await UserModel.findByIdAndDelete(userId) 
+       res.send("User Deleted Successfully.." )
+ }catch(err){
+       res.status(400).send("Error...")
+ }
+
+})
+
+//Update  date of user in database
+app.patch("/user",async(req,res)=>{
+   const userid = req.body.userid
+   const data = req.body
+   try{
+     const userUp = await UserModel.findByIdAndUpdate(userid,data,{returnDocument:"after"}) 
+     console.log(userUp)
+     res.send("User Updated Successfully...")
+   }catch(err){
+    res.status(400).send("Error in Updating")
+   }
+})
 
 connectDB()
   .then(()=>{
