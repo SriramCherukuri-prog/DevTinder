@@ -15,10 +15,13 @@ app.post("/signup",async (req,res)=>{
 
   //save data to database
   try{
+    
     await User.save()
     res.send("User Added to DataBase Successfully...!")
+   
   }catch(err){
-    res.status(500).send("Bad Request..!",err.message)
+    if(err.code === 11000)
+    res.status(500).send("Users Email Already Exits....!")
   }
         
 
@@ -76,11 +79,11 @@ app.patch("/user",async(req,res)=>{
    const userid = req.body.userid
    const data = req.body
    try{
-     const userUp = await UserModel.findByIdAndUpdate(userid,data,{returnDocument:"after"}) 
+     const userUp = await UserModel.findByIdAndUpdate(userid,data,{runValidators:true}) 
      console.log(userUp)
      res.send("User Updated Successfully...")
    }catch(err){
-    res.status(400).send("Error in Updating")
+    res.status(400).send("Update Error:"+ err.message)
    }
 })
 
