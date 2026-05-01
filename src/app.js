@@ -26,6 +26,39 @@ app.post("/signup",async (req,res)=>{
 
 
 
+app.get("/user",async(req,res)=>{
+    const email = req.body.emailid
+
+    try{
+      const userinfo= await UserModel.find({})
+      if(userinfo.length===0){
+            res.status(404).send("User Not Found")
+          }else{
+            res.send(userinfo)
+          }
+    }catch(err){
+        res.status(401).send("Something Went Wrong")
+    }
+
+    
+})
+
+
+//Feed API - GET/feed => all the users Data
+
+app.get("/feed", async (req,res)=>{
+  try{
+
+    const users = await UserModel.find({})
+    res.send(users) 
+
+  }catch(err){
+    res.status(401).send("something went wrong")
+  }
+})
+
+
+
 
 connectDB()
   .then(()=>{
