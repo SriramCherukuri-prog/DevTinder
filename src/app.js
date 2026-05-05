@@ -9,6 +9,8 @@ const app = express();
 
 app.use(express.json())
 
+//SIGNUP API
+
 app.post("/signup",async (req,res)=>{
 
 
@@ -41,7 +43,36 @@ app.post("/signup",async (req,res)=>{
 
 })
 
+//LOGIN API
 
+app.post("/login", async(req,res)=>{
+  try{
+
+    const {emailid,password} = req.body
+
+    //email validation
+    const user = await UserModel.findOne({emailid})
+    // console.log(user)
+    if(!user){
+      throw new Error("User emailid not found")
+    }
+    
+    
+    //compare password validation
+    const isPasswordValid = await bcrypt.compare(password,user.password)
+   
+      // console.log(isPasswordValid)
+    if(isPasswordValid){
+      res.send("Login Successfull..!!")
+    }else{
+      throw new Error("Invalid credentials")
+    }
+
+
+  }catch(err){
+    res.status(400).send("ERROR:"+ err.message)
+  }
+})
 
 app.get("/user",async(req,res)=>{
     const email = req.body.emailid
