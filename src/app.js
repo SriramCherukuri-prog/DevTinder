@@ -1,6 +1,8 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const UserModel = require("./models/user") 
+const {validateSignUpData} = require("./utils/validation")
+const bcrypt = require("bcrypt")
 
 const app = express();
 
@@ -9,19 +11,31 @@ app.use(express.json())
 
 app.post("/signup",async (req,res)=>{
 
-    console.log(req.body)
-   
-  const User = new UserModel(req.body)
 
   //save data to database
   try{
     
+  //validate data
+  validateSignUpData(req);
+
+
+  //encrypt password
+
+  const {firstName,lastName,emailid,password} = req.body
+
+  const passwordHash  = await bcrypt.hash(password,10)
+  console.log(passwordHash)
+
+
+   
+  const User = new UserModel({
+    firstName,lastName,emailid,password:passwordHash
+  })
     await User.save()
     res.send("User Added to DataBase Successfully...!")
    
   }catch(err){
-    if(err.code === 11000)
-    res.status(500).send("Users Email Already Exits....!")
+    res.status(400).send("ERROR:"+ err.message)
   }
         
 
@@ -75,10 +89,21 @@ app.delete("/del",async(req,res)=>{
 })
 
 //Update  date of user in database
-app.patch("/user",async(req,res)=>{
-   const userid = req.body.userid
+app.patch("/user/:userid",async(req,res)=>{
+   const userid = req.params.userid
    const data = req.body
+
    try{
+    const isAllowed = ["firstName","password","age","gender","Skills"]
+
+    const isUpdatedAllowed = Object.keys(data).every((item)=> isAllowed.includes(item))
+
+    if(!isUpdatedAllowed){
+        throw new Error("Updated Not Allowed..!!")
+    }
+    if(data.Skills.length > 4){
+      throw new Error("Skills cannot be added morethan 4")
+    }
      const userUp = await UserModel.findByIdAndUpdate(userid,data,{runValidators:true}) 
      console.log(userUp)
      res.send("User Updated Successfully...")
@@ -93,8 +118,7 @@ connectDB()
     app.listen(2000,()=>{
     console.log("Server is listing on port 2000 successfully...!")
    })
-})
-    .catch((err)=>{
+}).catch((err)=>{
         console.log("DataBase not connected Successfully...!!")
     })
 
