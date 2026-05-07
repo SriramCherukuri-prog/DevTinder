@@ -3,11 +3,15 @@ const connectDB = require("./config/database");
 const UserModel = require("./models/user") 
 const {validateSignUpData} = require("./utils/validation")
 const bcrypt = require("bcrypt")
+const cookieParser = require("cookie-parser")
+const jwt = require("jsonwebtoken")
+
 
 const app = express();
 
-
+//middlewares we can used for all the routes then we use app.use()
 app.use(express.json())
+app.use(cookieParser())
 
 //SIGNUP API
 
@@ -26,7 +30,6 @@ app.post("/signup",async (req,res)=>{
   const {firstName,lastName,emailid,password} = req.body
 
   const passwordHash  = await bcrypt.hash(password,10)
-  console.log(passwordHash)
 
 
    
@@ -63,6 +66,12 @@ app.post("/login", async(req,res)=>{
    
       // console.log(isPasswordValid)
     if(isPasswordValid){
+      //creating a JWT token
+      const token = await jwt.sign({_id:user._id},"Sriram@123");
+      
+      //Cookie stores this JWT token
+      res.cookie("token",token)
+      
       res.send("Login Successfull..!!")
     }else{
       throw new Error("Invalid credentials")
@@ -71,6 +80,41 @@ app.post("/login", async(req,res)=>{
 
   }catch(err){
     res.status(400).send("ERROR:"+ err.message)
+  }
+})
+
+//PROFILE API - Browser sends cookie automatically when profile request made
+
+app.get("/profile",async (req,res)=>{
+
+  try{
+
+  
+  //Server reads cookie using cookie-parser
+  const cookie  = req.cookies
+ 
+  const {token} = cookie 
+
+  if(!token){
+    throw new Error("Token not found in cookie.. Authentication Failed Please login again..!!")
+  }
+
+  //Validating my token and gives me decode data
+  const isCookieValid = jwt.verify(token, "Sriram@123")
+  const {_id} = isCookieValid
+
+  if(isCookieValid){
+
+    const userData = await   UserModel.findById({_id})
+
+   //if token is valid then  user does not exit..
+   if(!userData){
+    throw new Error("User not found....")
+   }
+    res.send(userData)
+  }
+  }catch(err){
+    res.status(400).send("Error in cookie.. Autentication Failed: " + err.message)
   }
 })
 
@@ -142,6 +186,11 @@ app.patch("/user/:userid",async(req,res)=>{
     res.status(400).send("Update Error:"+ err.message)
    }
 })
+
+
+
+
+
 
 connectDB()
   .then(()=>{
