@@ -63,12 +63,13 @@ app.post("/login", async(req,res)=>{
     
     
     //compare password validation
-    const isPasswordValid = await bcrypt.compare(password,user.password)
+    const isPasswordValid = await user.validatePassword(password)
    
       // console.log(isPasswordValid)
     if(isPasswordValid){
-      //creating a JWT token
-      const token = await jwt.sign({_id:user._id},"Sriram@123",{expiresIn:"0d"});
+
+      //getting JWT token from schemamethod function which we created
+      const token = await user.getJWT();
       
       //Cookie stores this JWT token
       res.cookie("token",token,{expires: new Date(Date.now()+8 * 3600000)})
