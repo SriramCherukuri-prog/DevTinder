@@ -5,6 +5,7 @@ const {validateSignUpData} = require("./utils/validation")
 const bcrypt = require("bcrypt")
 const cookieParser = require("cookie-parser")
 const jwt = require("jsonwebtoken")
+const {userAuth} = require("./Middlewares/auth")
 
 
 const app = express();
@@ -57,7 +58,7 @@ app.post("/login", async(req,res)=>{
     const user = await UserModel.findOne({emailid})
     // console.log(user)
     if(!user){
-      throw new Error("User emailid not found")
+      throw new Error("User email Id not found")
     }
     
     
@@ -67,17 +68,15 @@ app.post("/login", async(req,res)=>{
       // console.log(isPasswordValid)
     if(isPasswordValid){
       //creating a JWT token
-      const token = await jwt.sign({_id:user._id},"Sriram@123");
+      const token = await jwt.sign({_id:user._id},"Sriram@123",{expiresIn:"0d"});
       
       //Cookie stores this JWT token
-      res.cookie("token",token)
+      res.cookie("token",token,{expires: new Date(Date.now()+8 * 3600000)})
       
       res.send("Login Successfull..!!")
     }else{
       throw new Error("Invalid credentials")
     }
-
-
   }catch(err){
     res.status(400).send("ERROR:"+ err.message)
   }
@@ -85,37 +84,23 @@ app.post("/login", async(req,res)=>{
 
 //PROFILE API - Browser sends cookie automatically when profile request made
 
-app.get("/profile",async (req,res)=>{
+app.get("/profile",userAuth,async (req,res)=>{
 
   try{
+    const userData = req.userData
 
-  
-  //Server reads cookie using cookie-parser
-  const cookie  = req.cookies
- 
-  const {token} = cookie 
-
-  if(!token){
-    throw new Error("Token not found in cookie.. Authentication Failed Please login again..!!")
-  }
-
-  //Validating my token and gives me decode data
-  const isCookieValid = jwt.verify(token, "Sriram@123")
-  const {_id} = isCookieValid
-
-  if(isCookieValid){
-
-    const userData = await   UserModel.findById({_id})
-
-   //if token is valid then  user does not exit..
-   if(!userData){
-    throw new Error("User not found....")
-   }
     res.send(userData)
-  }
   }catch(err){
-    res.status(400).send("Error in cookie.. Autentication Failed: " + err.message)
+    res.status(400).send("Error:" + err.message)
   }
+})
+
+app.post("/sendConnectionRequest",userAuth,async(req,res)=>{
+
+  const user = req.userData
+
+  console.log("Connection Request Sent..!!!")
+  res.send(user.firstName + " Sent Connection Request..!!!!!")
 })
 
 app.get("/user",async(req,res)=>{
