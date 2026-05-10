@@ -14,6 +14,16 @@ const validateSignUpData = (req)=>{
 
 }
 
+
+const validateProfileEditData =(req)=>{
+    const allowEidtFileds = ["firstName","lastName","emailid","age","photoUrl","gender","about","Skills"];
+
+   const iseditAllowed  =  Object.keys(req.body).every(filed=>allowEidtFileds.includes(filed));
+
+   return iseditAllowed
+}
+
 module.exports = {
-    validateSignUpData 
+    validateSignUpData ,
+    validateProfileEditData
 }

@@ -18,14 +18,14 @@ authRouter.post("/signup",async (req,res)=>{
 
   //encrypt password
 
-  const {firstName,lastName,emailid,password} = req.body
+  const {firstName,lastName,emailid,password,gender,photoUrl} = req.body
 
   const passwordHash  = await bcrypt.hash(password,10)
 
 
    
   const User = new UserModel({
-    firstName,lastName,emailid,password:passwordHash
+    firstName,lastName,emailid,password:passwordHash,gender,photoUrl
   })
     await User.save()
     res.send("User Added to DataBase Successfully...!")
@@ -61,7 +61,7 @@ authRouter.post("/login", async(req,res)=>{
       const token = await user.getJWT();
       
       //Cookie stores this JWT token
-      res.cookie("token",token,{expires: new Date(Date.now()+8 * 3600000)})
+      res.cookie("token",token)
       
       res.send("Login Successfull..!!")
     }else{
@@ -70,6 +70,14 @@ authRouter.post("/login", async(req,res)=>{
   }catch(err){
     res.status(400).send("ERROR:"+ err.message)
   }
+})
+
+//logout api
+authRouter.post("/logout",(req,res)=>{
+    res.cookie("token",null,{
+        //setted expiry time as current time that means now
+        expires:new Date(Date.now())
+    }).send("Logout Succesufully..")
 })
 
 

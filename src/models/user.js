@@ -2,6 +2,7 @@
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const validator = require("validator")
 
 //Defining a schema what userSchema stores info into DB
 const userSchema  = mongoose.Schema({
@@ -33,10 +34,20 @@ const userSchema  = mongoose.Schema({
     gender:{
         type:String,
         validate(value){
-            if(!["male","female","others"].includes(value)){
+            if(!["male","female","others"].includes(value.toLowerCase())){
                 throw new Error("Gender Data is not valid")
             }
         },
+    },
+    photoUrl:{
+        type:String,
+        default:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3_DCFxEwpnHdDMKs1wO55guS6Q5O65kYG6Q&s",
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("Invalid Image URL: " + value)
+            }
+        }
+
     },
     about:{
         type:String,
