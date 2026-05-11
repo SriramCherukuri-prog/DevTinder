@@ -2,7 +2,7 @@
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-const validator = require("validator")
+const validator  = require("validator")
 
 //Defining a schema what userSchema stores info into DB
 const userSchema  = mongoose.Schema({

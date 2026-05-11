@@ -3,7 +3,9 @@ const authRouter = express.Router();
 const {validateSignUpData} = require("../utils/validation")
 const UserModel = require("../models/user")
 const bcrypt = require("bcrypt") 
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
+const { userAuth } = require('../Middlewares/auth')
+
 
 //signup api
 authRouter.post("/signup",async (req,res)=>{
@@ -78,6 +80,45 @@ authRouter.post("/logout",(req,res)=>{
         //setted expiry time as current time that means now
         expires:new Date(Date.now())
     }).send("Logout Succesufully..")
+})
+
+//forgot password api
+authRouter.post("/forgotpassword",async (req,res)=>{
+
+  try{
+    
+    const  {emailid,oldpassword,newpassword} = req.body
+
+    const user = await UserModel.findOne({emailid})
+
+    if(!user){
+      throw new Error("User Not Found Please Login with valid credentials..")
+    }
+
+    //if user find verfiy old password;
+    const isPasswordValid = await user.validatePassword(oldpassword);
+
+    if(!isPasswordValid){
+      throw new Error("Old Password is Invalid..")
+    }
+
+    //if passwordvalid create a new hash password
+    const passwordHash = await bcrypt.hash(newpassword,10);
+
+    //updating hash password;
+    user.password = passwordHash;
+
+    //saving new password into database
+    await user.save();
+
+    //sending back response;
+    res.json({
+      message:"Password Updated SuccessFully...!!!"
+    })
+
+  }catch(err){
+    res.status(400).send("Error Occured in Forgot password:" + err.message)
+  }
 })
 
 
