@@ -60,5 +60,50 @@ requestRouter.post("/request/send/:status/:toUserId",userAuth,async(req,res)=>{
 
 })
 
+requestRouter.post("/request/review/:status/:requestId",userAuth,async(req,res)=>{
+
+  try{
+
+    //allowed status valid or not
+    //sriram=>venu
+    //loggedInUser = Venu
+    //status = interested
+    //request id shouldbe vaild
+
+    const loggedInUser = req.userData
+
+    const {status,requestId} = req.params 
+
+    const allowedStatus = ["accepted","rejected"];
+    if(!allowedStatus.includes(status)){
+      return res.status(400).json({message:"Invalid Status Code.."})
+    }
+    //finding  request in DB
+    const connectionRequest = await ConnectionRequestModel.findOne({
+      _id:requestId,
+      toUserId:loggedInUser._id,
+      status:"interested"
+    })
+
+    if(!connectionRequest){
+      return res.status(404).json({message:"ConnectionRequest not found..!!"})
+    }
+
+    //changing the status
+
+    connectionRequest.status  = status;
+
+    //saving data in db and sending response
+    const data = await connectionRequest.save();
+
+    res.json({
+      message:loggedInUser.firstName + " "+ status + " "+ "Successfully",
+      data
+    })
+
+  }catch(err){
+    res.status(400).send("ERROR Occured in Review Request: " + err.message)
+  }
+})
 
 module.exports = requestRouter;
