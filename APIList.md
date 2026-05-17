@@ -27,5 +27,6 @@
   /feed?page=2limt=10 = >  11-20 => .skip(10) & .limit(10)
   /feed?page=3limt=10 = >  21-30 => .skip(20) & .limit(10)
   /feed?page=4limt=10 = >  31-40 => .skip(30) & .limit(10)
+  skip =>  page -1 *limit
 
 
