@@ -3,6 +3,7 @@ const express = require('express');
 const userRouter = express.Router()
 const {userAuth}  =  require("../Middlewares/auth");
 const ConnectionRequestModel = require('../models/connectionRequest');
+const UserModel = require("../models/user")
 
     const USER_SAFE_DATA = "firstName lastName photoUrl age gender about Skills"
 
@@ -84,5 +85,57 @@ userRouter.get("/user/connections",userAuth,async(req,res)=>{
     }
 })
 
+userRouter.get("/user/feed",userAuth,async(req,res)=>{
+    try{
+        //user will get the feed of all the users who are not connected to him and also not send any request to him
+        //user will not see himself in feed
+        // he should not see cards of his connections
+        // not see cards of ingnored users
+        // already sent connncection request 
+          const loggedInUser = req.userData;
+
+          //pageination 
+          const page = parseInt(req.query.page) || 1
+          let limit = parseInt(req.query.limit) || 10;
+          limit = limit > 50 ? 50 : limit
+          const skip = (page - 1) * limit
+
+          //finding the connection requests of loggedInuser which i have (sent + received)
+          const connectionRequests = await ConnectionRequestModel.find({
+            $or:[
+                {fromUserId:loggedInUser._id},
+                {toUserId:loggedInUser._id}
+            ]
+          }).select("fromUserId toUserId status")
+
+          //hideing the users from feed who are in connection request with loggedInUser
+          const hideUsersFromFeed = new Set();
+          connectionRequests.forEach((req)=>{
+            hideUsersFromFeed.add(req.fromUserId.toString());
+            hideUsersFromFeed.add(req.toUserId.toString());
+          })
+    
+
+          //Db call
+          const feedUsers = await UserModel.find({
+            $and:[
+              {_id: { $nin:Array.from(hideUsersFromFeed) } },
+              {_id: { $ne:loggedInUser._id } } 
+            ]
+        
+          }).select(USER_SAFE_DATA).skip(skip).limit(limit)
+
+
+          res.status(200).json({
+            message:"Feed Fetched Successfully..!",
+            page,
+            data:feedUsers
+          })
+
+    }catch(err){
+        res.status(400).send(  "ERROR Occured in Feed API: "
+            + err.message)
+    }
+})
 
 module.exports = userRouter
