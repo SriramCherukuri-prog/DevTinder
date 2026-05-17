@@ -13,9 +13,10 @@ const userRouter = require("./routes/user");
 const app = express();
 
 //middlewares we can used for all the routes then we use app.use()
+app.use(cors())
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors())
+
 
 
 app.use("/",authRouter);
