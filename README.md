@@ -44,7 +44,7 @@ Register a new developer account.
 ```json
 {
   "firstName": "sriram",
-  "lastName":"cherukuri,
+  "lastName":"cherukuri",
   "email": "sriramcherukuri999@example.com",
   "password": "Sriram@1234"
 }
